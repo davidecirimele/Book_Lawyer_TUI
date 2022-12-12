@@ -12,7 +12,6 @@ from validation.regex import pattern
 @typechecked
 @dataclass(frozen=True, order=True)
 class Customer:
-
     value: int
 
     def __post_init__(self):
@@ -22,61 +21,61 @@ class Customer:
     def __str__(self):
         return str(self.value)
 
-@typechecked
-@dataclass(frozen=True,order=True)
-class Title:
 
-    value:str
+@typechecked
+@dataclass(frozen=True, order=True)
+class Title:
+    value: str
 
     def __post_init__(self):
         validate_dataclass(self)
-        validate('value',self.value,max_len=30,min_len=1,custom=pattern(r'^[\w\s.:;]*$'))
+        validate('value', self.value, max_len=30, min_len=1, custom=pattern(r'^[\w\s.:;]*$'))
 
     def __str__(self):
         return self.value
+
 
 @typechecked
 @dataclass(order=True, frozen=True)
 class Subject:
-
-    value:str
+    value: str
 
     def __post_init__(self):
         validate_dataclass(self)
-        validate('value',self.value,max_len=200,min_len=1,custom=pattern(r'^[\w\s.:;]*$'))
+        validate('value', self.value, max_len=200, min_len=1, custom=pattern(r'^[\w\s.:;]*$'))
 
     def __str__(self):
         return self.value
 
 
 @typechecked
-@dataclass(frozen=True,order=True)
+@dataclass(frozen=True, order=True)
 class Date:
-
-    value:datetime.datetime
+    value: datetime.datetime
 
     def __post_init__(self):
         validate_dataclass(self)
+        validate('value', self.value, min_value=datetime.datetime.now())
 
     def __str__(self):
         return str(self.value)
 
-@typechecked
-@dataclass(frozen=True,order=True)
-class Appointment:
 
-    customer:Customer
-    title:Title
-    subject:Subject
-    date:Date
+@typechecked
+@dataclass(frozen=True, order=True)
+class Appointment:
+    customer: Customer
+    title: Title
+    subject: Subject
+    date: Date
 
     def __post_init__(self):
         validate_dataclass(self)
 
+
 @typechecked
 @dataclass(frozen=True)
-class Law_firm:
-
+class LawFirm:
     __appointments: List[Appointment] = field(default_factory=list, init=False)
 
     def clear(self):
@@ -100,6 +99,3 @@ class Law_firm:
 
     def sort_by_date(self) -> None:
         self.__appointments.sort(key=lambda x: x.date, reverse=True)
-
-
-
