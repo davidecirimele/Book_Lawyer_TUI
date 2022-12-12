@@ -55,7 +55,6 @@ class Date:
 
     def __post_init__(self):
         validate_dataclass(self)
-        validate('value', self.value, min_value=datetime.datetime.now())
 
     def __str__(self):
         return str(self.value)

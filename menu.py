@@ -40,7 +40,6 @@ class Entry:
     is_exit: bool = field(default=False)
     is_visible_by_anyone: bool = field(default=False)
 
-
     @staticmethod
     def create(key: str, description: str, on_selected: Callable[[], None] = lambda: None,
                is_exit: bool = False) -> 'Entry':
@@ -57,10 +56,8 @@ class Menu:
     __key2entry: Dict[Key, Entry] = field(default_factory=dict, repr=False, init=False)
     create_key: InitVar[Any] = field(default='None')
 
-
     def __post_init__(self, create_key: Any):
         validate('create_key', create_key, custom=Menu.Builder.is_valid_key)
-
 
     def _add_entry(self, value: Entry, create_key: Any) -> None:
         validate('create_key', create_key, custom=Menu.Builder.is_valid_key)
@@ -68,10 +65,8 @@ class Menu:
         self.__entries.append(value)
         self.__key2entry[value.key] = value
 
-
     def _has_exit(self) -> bool:
         return bool(list(filter(lambda e: e.is_exit, self.__entries)))
-
 
     def __print(self) -> None:
         length = len(str(self.description))
@@ -83,7 +78,6 @@ class Menu:
         self.auto_select()
         for entry in self.__entries:
             print(f'{entry.key}:\t{entry.description}')
-
 
     def __select_from_input(self) -> bool:
         while True:
@@ -97,7 +91,6 @@ class Menu:
             except (KeyError, TypeError, ValueError):
                 print('Invalid selection. Please, try again...')
 
-
     def run(self) -> None:
         while True:
             self.__print()
@@ -105,28 +98,23 @@ class Menu:
             if is_exit:
                 return
 
-
     @typechecked
     @dataclass()
     class Builder:
         __menu: Optional['Menu']
         __create_key = object()
 
-
         def __init__(self, description: Description, auto_select: Callable[[], None] = lambda: None):
             self.__menu = Menu(description, auto_select, self.__create_key)
-
 
         @staticmethod
         def is_valid_key(key: Any) -> bool:
             return key == Menu.Builder.__create_key
 
-
         def with_entry(self, value: Entry) -> 'Menu.Builder':
             validate('menu', self.__menu)
             self.__menu._add_entry(value, self.__create_key)
             return self
-
 
         def build(self) -> 'Menu':
             validate('menu', self.__menu)

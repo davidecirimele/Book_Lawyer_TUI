@@ -20,11 +20,6 @@ def test_subject_format():
         Title('A'*201)
 
 
-def test_date_format():
-    with pytest.raises(ValidationError):
-        Date(datetime.datetime(2000, 1, 1))
-
-
 @pytest.fixture
 def appointments():
     return [
