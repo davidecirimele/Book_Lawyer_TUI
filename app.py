@@ -39,7 +39,7 @@ class App:
             return None
         self.username = username
         json = res.json()
-        print("Successfull logged in")
+        print(f"Successfull logged in, json")
         self.key = json['key']
         return self.key
 
@@ -113,7 +113,9 @@ class App:
                 print(e)
 
     def __read_appointment(self) -> Tuple[Customer, Title, Subject, Date]:
-        customer = self.__read('Customer', Customer)
+        json = requests.get(url=f"{self.api_server}/auth/user/",headers={'Authorization': f'Token {self.key}'}).json()
+        customer = json['pk']
+        print(customer)
         title = self.__read('Title', Title)
         subject = self.__read('Subject', Subject)
         date = self.__read('Date', Date)
