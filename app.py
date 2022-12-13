@@ -1,3 +1,4 @@
+import datetime
 import sys
 
 from menu import Menu, Description, Entry
@@ -6,6 +7,8 @@ from typing import Any, Tuple, Callable
 from valid8 import validate, ValidationError
 import getpass
 import requests
+
+LAWYER_USERNAME = "Lawyer"
 
 
 class App:
@@ -83,21 +86,20 @@ class App:
         appointment_id = input("Insert appointment ID: ")
         print(self.__fetch_single_appointment(appointment_id))
 
-    def __add_appointment(self):
-        if self.username == "Lawyer":
-            res = requests.post(url=f'{self.api_server}/appointments/lawyer',
-                                headers={'Authorization': f'Token {self.key}'},
-                                data=('...'))
-        else:
-            res = requests.post(url=f'{self.api_server}/appointments/customer',
-                                headers={'Authorization': f'Token {self.key}'},
-                                data=('...'))
+    def __add_appointment(self, appointment: Appointment):
+        url = f'{self.api_server}/appointments/customer'
+        if self.username is LAWYER_USERNAME:
+            url = f'{self.api_server}/appointments/lawyer'
+
+        res = requests.post(url=url,
+                            headers={'Authorization': f'Token {self.key}'},
+                            data={'customer': appointment.customer.value, 'title': appointment.title.value,
+                                  'subject': appointment.subject.value, 'date': appointment.date.value})
         return res.json()
 
     def __book_the_lawyer(self):
-        appointment = self.__read_appointment()
+        appointment = Appointment(self.__read_appointment())
         print(self.__add_appointment(appointment))
-
 
     def __delete_appointment(self):
         pass
@@ -113,12 +115,12 @@ class App:
                 print(e)
 
     def __read_appointment(self) -> Tuple[Customer, Title, Subject, Date]:
-        json = requests.get(url=f"{self.api_server}/auth/user/",headers={'Authorization': f'Token {self.key}'}).json()
-        customer = json['pk']
-        print(customer)
+        json = requests.get(url=f"{self.api_server}/auth/user/", headers={'Authorization': f'Token {self.key}'}).json()
+        customer = Customer(json['pk'])
         title = self.__read('Title', Title)
         subject = self.__read('Subject', Subject)
-        date = self.__read('Date', Date)
+        # date = self.__read('Date', Date)
+        date = Date(datetime.datetime(2030,1,1,20,30))
         return customer, title, subject, date
 
     def __run(self) -> None:

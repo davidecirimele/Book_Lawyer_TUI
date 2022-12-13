@@ -88,8 +88,9 @@ class Menu:
                 entry = self.__key2entry[key]
                 entry.on_selected()
                 return entry.is_exit
-            except (KeyError, TypeError, ValueError):
+            except (KeyError, TypeError, ValueError) as e:
                 print('Invalid selection. Please, try again...')
+                print(e)
 
     def run(self) -> None:
         while True:
