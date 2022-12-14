@@ -1,8 +1,11 @@
 import datetime
 
 import pytest
+from unittest import mock
+from unittest.mock import patch
 from valid8 import ValidationError
 from appointments.domain import Customer, Title, Subject, Date, Appointment, LawFirm
+from app import App
 
 
 def test_author_str():
@@ -11,48 +14,56 @@ def test_author_str():
 
 def test_title_format():
     with pytest.raises(ValidationError):
-        Title('A'*31)
+        Title('A' * 31)
+
+
+def test_title_str():
+    assert str(Title('A')) == 'A'
 
 
 def test_subject_format():
     with pytest.raises(ValidationError):
-        Title('A'*201)
+        Title('A' * 201)
 
 
-@pytest.fixture
-def appointments():
-    return [
-        Appointment(Customer(1), Title("Divorzio"), Subject("Voglio divorzio"), Date(datetime.datetime(2030, 1, 1))),
-        Appointment(Customer(2), Title("Denuncia"), Subject("Voglio denunciare"), Date(datetime.datetime(2030, 1, 2))),
-    ]
+def test_subject_str():
+    assert str(Subject('A')) == 'A'
 
 
-def test_clear_len_add_appointments(appointments):
+def test_date_str():
+    assert str(Date(datetime.datetime(1, 1, 1, 1, 1))) == '0001-01-01 01:01:00'
+
+
+def test_law_firm_fetch_appointments():
     law_firm = LawFirm()
-    size = 0
-    for appointment in appointments:
-        law_firm.add_appointment(appointment)
-        size += 1
-        assert law_firm.appointments() == size
-        assert law_firm.appointment((size - 1)) == appointment
-    law_firm.clear()
-    assert law_firm.appointments() == 0
+    response = law_firm.fetch_appointments("Q", "A")
+    assert response is None
 
 
-def test_remove_appointment(appointments):
+def test_law_firm_fetch_single_appointment():
     law_firm = LawFirm()
-    for appointment in appointments:
-        law_firm.add_appointment(appointment)
+    response = law_firm.fetch_single_appointment("A", "Q", "A")
+    assert response is None
 
-    law_firm.remove_appointment(0)
-    assert law_firm.appointment(0) == appointments[1]
 
-    with pytest.raises(ValidationError):
-        law_firm.remove_appointment(-1)
+def test_law_firm_add_appointment():
+    law_firm = LawFirm()
+    response = law_firm.add_appointment(
+        Appointment(Customer(1), Title("A"), Subject("A"), Date(datetime.datetime(1, 1, 1, 1, 1))), "Q", "A")
+    assert response is None
 
-    with pytest.raises(ValidationError):
-        law_firm.remove_appointment(law_firm.appointments())
 
-    while law_firm.appointments():
-        law_firm.remove_appointment(0)
-    assert law_firm.appointments() == 0
+@patch('builtins.input', side_effect=['2'])
+@patch('builtins.print')
+def test_law_firm_delete_appointment(mocked_input, mocked_print):
+    law_firm = LawFirm()
+    law_firm.delete_appointment("A", "B")
+    mocked_print.assert_called()
+
+
+def test_law_firm_update_appointment():
+    law_firm = LawFirm()
+    response = law_firm.update_appointment(
+        Appointment(Customer(1), Title("A"), Subject("A"), Date(datetime.datetime(1, 1, 1, 1, 1))), "Q", "A", "U")
+    assert response is None
+

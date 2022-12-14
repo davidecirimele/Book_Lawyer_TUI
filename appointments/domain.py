@@ -118,6 +118,9 @@ class LawFirm:
                             data={"customer": appointment.customer.value, "title": appointment.title.value,
                                   "subject": appointment.subject.value, "date": appointment.date.value})
 
+        if res.status_code != 201:
+            return None
+
         return res.json()
 
     def delete_appointment(self, key, username):
@@ -146,5 +149,8 @@ class LawFirm:
                            headers={'Authorization': f'Token {key}'},
                            data={"customer": appointment.customer.value, "title": appointment.title.value,
                                  "subject": appointment.subject.value, "date": appointment.date.value})
+
+        if res.status_code != 200:
+            return None
 
         return res.json()

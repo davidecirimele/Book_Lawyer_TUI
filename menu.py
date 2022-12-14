@@ -97,7 +97,6 @@ class Menu:
             is_exit = self.__select_from_input()
             if is_exit:
                 return
-
     @typechecked
     @dataclass()
     class Builder:
