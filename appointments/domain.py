@@ -31,7 +31,7 @@ class Title:
 
     def __post_init__(self):
         validate_dataclass(self)
-        validate('value', self.value, max_len=30, min_len=1, custom=pattern(r'^[\w\s.:;]*$'))
+        validate('value', self.value, max_len=30, min_len=1, custom=pattern(r'^[\w\s.,:;\'"]*$'))
 
     def __str__(self):
         return self.value
@@ -44,7 +44,7 @@ class Subject:
 
     def __post_init__(self):
         validate_dataclass(self)
-        validate('value', self.value, max_len=200, min_len=1, custom=pattern(r'^[\w\s.:;]*$'))
+        validate('value', self.value, max_len=200, min_len=1, custom=pattern(r'^[\w\s.,:;\'"]*$'))
 
     def __str__(self):
         return self.value
@@ -80,8 +80,8 @@ class LawFirm:
     api_server = 'http://localhost:8000/api/v1'
     LAWYER_USERNAME = "Lawyer"
 
-    def fetch_appointments(self,key,username):
-        if username == "Lawyer":
+    def fetch_appointments(self, key, username):
+        if username == self.LAWYER_USERNAME:
             res = requests.get(url=f'{self.api_server}/appointments/lawyer/',
                                headers={'Authorization': f'Token {key}'})
         else:
@@ -92,8 +92,8 @@ class LawFirm:
 
         return res.json()
 
-    def fetch_single_appointment(self, appointment_id,key,username):
-        if username == "Lawyer":
+    def fetch_single_appointment(self, appointment_id, key, username):
+        if username == self.LAWYER_USERNAME:
             res = requests.get(url=f'{self.api_server}/appointments/lawyer/{appointment_id}',
                                headers={'Authorization': f'Token {key}'})
         else:
@@ -104,7 +104,7 @@ class LawFirm:
 
         return res.json()
 
-    def add_appointment(self, appointment: Appointment,key,username):
+    def add_appointment(self, appointment: Appointment, key, username):
         if username is None:
             print("You must be logged in")
             return
@@ -120,7 +120,7 @@ class LawFirm:
 
         return res.json()
 
-    def delete_appointment(self,key,username):
+    def delete_appointment(self, key, username):
         appointment_to_delete = input("Insert appointment ID you want to delete: ")
 
         if username is self.LAWYER_USERNAME:
@@ -135,7 +135,7 @@ class LawFirm:
         else:
             print("Appointment not deleted")
 
-    def update_appointment(self,appointment : Appointment,appointment_to_update,key,username):
+    def update_appointment(self, appointment: Appointment, appointment_to_update, key, username):
 
         if username is self.LAWYER_USERNAME:
             url = f'{self.api_server}/appointments/lawyer/{appointment_to_update}/'
@@ -143,8 +143,8 @@ class LawFirm:
             url = f'{self.api_server}/appointments/customer/{appointment_to_update}/'
 
         res = requests.put(url=url,
-                            headers={'Authorization': f'Token {key}'},
-                            data={"customer": appointment.customer.value, "title": appointment.title.value,
-                                  "subject": appointment.subject.value, "date": appointment.date.value})
+                           headers={'Authorization': f'Token {key}'},
+                           data={"customer": appointment.customer.value, "title": appointment.title.value,
+                                 "subject": appointment.subject.value, "date": appointment.date.value})
 
         return res.json()

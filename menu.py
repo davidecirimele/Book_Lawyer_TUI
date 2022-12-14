@@ -90,7 +90,6 @@ class Menu:
                 return entry.is_exit
             except (KeyError, TypeError, ValueError) as e:
                 print('Invalid selection. Please, try again...')
-                print(e)
 
     def run(self) -> None:
         while True:

@@ -22,7 +22,8 @@ class App:
         self.__menu = Menu.Builder(Description('Book a Lawyer')) \
             .with_entry(Entry.create('1', 'Login', on_selected=lambda: self.__login())) \
             .with_entry(Entry.create('2', 'Register', on_selected=lambda: self.__register())) \
-            .with_entry(Entry.create('3', 'Show all the appointments', on_selected=lambda: self.__show_appointments())) \
+            .with_entry(Entry.create('3', 'Show all the appointments',
+                                     on_selected=lambda: self.__show_appointments())) \
             .with_entry(Entry.create('4', 'Show an appointment',
                                      on_selected=lambda: self.__show_single_appointment())) \
             .with_entry(Entry.create('5', 'Book the Lawyer', on_selected=lambda: self.__book_the_lawyer())) \
@@ -30,10 +31,7 @@ class App:
             .with_entry(Entry.create('7', 'Log out', on_selected=lambda: self.__logout())) \
             .with_entry(Entry.create('0', 'Exit', on_selected=lambda: print('Bye bye!'), is_exit=True)) \
             .build()
-        self.__lawfirm = LawFirm()
-
-    # Press ⌃R to execute it or replace it with your code.
-    # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+        self.__law_firm = LawFirm()
 
     def __login(self):
         if self.username is not None:
@@ -48,7 +46,7 @@ class App:
             return None
         self.username = username
         json = res.json()
-        print("Successfull logged in, Welcome")
+        print("Successful logged in, Welcome")
         self.key = json['key']
         return self.key
 
@@ -62,8 +60,9 @@ class App:
         password1 = getpass.getpass('Please enter a Password: ')
         password2 = getpass.getpass('Please, confirm Password: ')
 
-        res = requests.post(url=f'{self.api_server}/auth/registration/', data={'username': username, 'email': email
-            , 'password1': password1,'password2': password2})
+        res = requests.post(url=f'{self.api_server}/auth/registration/', data={'username': username, 'email': email,
+                                                                               'password1': password1,
+                                                                               'password2': password2})
         if res.status_code != 200:
             return None
 
@@ -81,14 +80,11 @@ class App:
             print("Logout failed")
         print()
 
-
-
-
     def __show_appointments(self):
         if self.username is None:
             print("You must be logged in")
             return
-        appointments = list(self.__lawfirm.fetch_appointments(self.key,self.username))
+        appointments = list(self.__law_firm.fetch_appointments(self.key, self.username))
         appointments.sort(key=lambda x: x['date'])
         self.__print_appointments(appointments)
 
@@ -97,32 +93,36 @@ class App:
             print("You must be logged in")
             return
         appointment_id = input("Insert appointment ID: ")
-        self.__print_appointment(self.__lawfirm.fetch_single_appointment(appointment_id,self.key,self.username))
-
-
+        self.__print_appointment(self.__law_firm.fetch_single_appointment(appointment_id, self.key, self.username))
 
     def __book_the_lawyer(self):
         if self.username is None:
             print("You must be logged in")
             return
         appointment = Appointment(*self.__read_appointment())
-        self.__print_appointment(self.__lawfirm.add_appointment(appointment,self.key,self.username))
+        self.__print_appointment(self.__law_firm.add_appointment(appointment, self.key, self.username))
 
     def __change_the_appointment(self):
         appointment_to_update = input("Insert appointment ID you want to modify: ")
         appointment = Appointment(*self.__read_appointment())
-        self.__print_appointment(self.__lawfirm.update_appointment(appointment,appointment_to_update,self.key,self.username))
+        self.__print_appointment(
+            self.__law_firm.update_appointment(appointment, appointment_to_update, self.key, self.username))
 
     def __manage_appointment(self):
         if self.username is None:
             print("You must be logged in")
             return
-        selection = input("1. To modify an appointment, 2. To delete an appointment. What do you want to do? ")
+        selection = input("1. To modify an appointment,\n"
+                          "2. To delete an appointment.\n"
+                          "0. Back. \n"
+                          "What do you want to do? ")
 
         if selection == '1':
             self.__change_the_appointment()
-        else:
-            self.__lawfirm.delete_appointment(self.key,self.username)
+        elif selection == '2':
+            self.__law_firm.delete_appointment(self.key, self.username)
+        elif selection == '3':
+            pass
 
     @staticmethod
     def __read(prompt: str, builder: Callable) -> Any:
@@ -137,43 +137,43 @@ class App:
             except (TypeError, ValueError, ValidationError) as e:
                 print(e)
 
-
     def __read_appointment(self) -> Tuple[Customer, Title, Subject, Date]:
-        json = requests.get(url=f"{self.api_server}/auth/user/", headers={'Authorization': f'Token {self.key}'}).json()
         if self.username == LAWYER_USERNAME:
             customer = self.__read('Customer', Customer)
         else:
+            json = requests.get(url=f"{self.api_server}/auth/user/",
+                                headers={'Authorization': f'Token {self.key}'}).json()
             customer = Customer(json['pk'])
         title = self.__read('Title', Title)
         subject = self.__read('Subject', Subject)
-        # date = self.__read('Date', Date)
         year = input("Please insert the year of the appointment: ")
         month = input("Please insert the month of the appointment: ")
         day = input("Please insert the day of the appointment: ")
         hour = input("Please insert the hour of the appointment: ")
-        mins = input("Please insert the minutes of the appointment: ")
-        date = Date(datetime.datetime(int(year),int(month),int(day),int(hour),int(mins)))
+        minutes = input("Please insert the minutes of the appointment: ")
+        date = Date(datetime.datetime(int(year), int(month), int(day), int(hour), int(minutes)))
         return customer, title, subject, date
-
-
 
     def __print_appointments(self, appointments) -> None:
         print_sep = lambda: print('-' * 140)
         print_sep()
         fmt = '%-3s %-10s %-20s %-80s %10s'
-        print(fmt % ('ID','CUSTOMER', 'TITLE', 'SUBJECT', 'DATE'))
+        print(fmt % ('ID', 'CUSTOMER', 'TITLE', 'SUBJECT', 'DATE'))
         print_sep()
         for appointment in appointments:
-            print(fmt % (appointment['id'],appointment['customer'], appointment['title'], appointment['subject'], appointment['date']))
+            print(fmt % (appointment['id'], appointment['customer'], appointment['title'], appointment['subject'],
+                         appointment['date']))
         print_sep()
 
     def __print_appointment(self, appointment) -> None:
         print_sep = lambda: print('-' * 140)
         print_sep()
         fmt = '%-3s %-10s %-20s %-80s %10s'
-        print(fmt % ('ID','CUSTOMER', 'TITLE', 'SUBJECT', 'DATE'))
+        print(fmt % ('ID', 'CUSTOMER', 'TITLE', 'SUBJECT', 'DATE'))
         print_sep()
-        print(fmt % (appointment['id'],appointment['customer'], appointment['title'], appointment['subject'], appointment['date']))
+        print(fmt % (
+            appointment['id'], appointment['customer'], appointment['title'], appointment['subject'],
+            appointment['date']))
         print_sep()
 
     def __run(self) -> None:
@@ -182,9 +182,8 @@ class App:
     def run(self) -> None:
         try:
             self.__run()
-        except Exception as e:
+        except:
             print('Error!', file=sys.stderr)
-            print(e)
 
 
 def main(name: str):
