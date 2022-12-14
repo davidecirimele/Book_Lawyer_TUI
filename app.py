@@ -1,12 +1,13 @@
 import datetime
 import sys
 
+import requests
+
 from menu import Menu, Description, Entry
 from appointments.domain import LawFirm, Appointment, Customer, Title, Subject, Date
 from typing import Any, Tuple, Callable
 from valid8 import validate, ValidationError
 import getpass
-import requests
 
 LAWYER_USERNAME = "Lawyer"
 
@@ -20,12 +21,13 @@ class App:
     def __init__(self):
         self.__menu = Menu.Builder(Description('Book a Lawyer')) \
             .with_entry(Entry.create('1', 'Login', on_selected=lambda: self.__login())) \
-            .with_entry(Entry.create('2', 'Show all the appointments', on_selected=lambda: self.__show_appointments())) \
-            .with_entry(Entry.create('3', 'Show an appointment',
+            .with_entry(Entry.create('2', 'Register', on_selected=lambda: self.__register())) \
+            .with_entry(Entry.create('3', 'Show all the appointments', on_selected=lambda: self.__show_appointments())) \
+            .with_entry(Entry.create('4', 'Show an appointment',
                                      on_selected=lambda: self.__show_single_appointment())) \
-            .with_entry(Entry.create('4', 'Book the Lawyer', on_selected=lambda: self.__book_the_lawyer())) \
-            .with_entry(Entry.create('5', 'Manage appointment', on_selected=lambda: self.__delete_appointment())) \
-            .with_entry(Entry.create('6', 'Log out', on_selected=lambda: self.__logout())) \
+            .with_entry(Entry.create('5', 'Book the Lawyer', on_selected=lambda: self.__book_the_lawyer())) \
+            .with_entry(Entry.create('6', 'Manage appointment', on_selected=lambda: self.__delete_appointment())) \
+            .with_entry(Entry.create('7', 'Log out', on_selected=lambda: self.__logout())) \
             .with_entry(Entry.create('0', 'Exit', on_selected=lambda: print('Bye bye!'), is_exit=True)) \
             .build()
         self.__dealer = LawFirm()
@@ -45,6 +47,19 @@ class App:
         print(f"Successfull logged in, json")
         self.key = json['key']
         return self.key
+
+    def __register(self):
+        username = input("Please enter an Username: ")
+        email = input("Please enter a valid email: ")
+        password1 = getpass.getpass('Please enter a Password: ')
+        password2 = getpass.getpass('Please, confirm Password: ')
+
+        res = requests.post(url=f'{self.api_server}/auth/registration/', data={'username': username, 'email': email
+            , 'password1': password1,'password2': password2})
+        if res.status_code != 200:
+            return None
+
+        return res.json()
 
     def __logout(self):
         res = requests.post(url=f'{self.api_server}/auth/logout/', headers={'Authorization': f'Token {self.key}'})
@@ -87,18 +102,20 @@ class App:
         print(self.__fetch_single_appointment(appointment_id))
 
     def __add_appointment(self, appointment: Appointment):
-        url = f'{self.api_server}/appointments/customer'
         if self.username is LAWYER_USERNAME:
-            url = f'{self.api_server}/appointments/lawyer'
+            url = f'{self.api_server}/appointments/lawyer/'
+        else:
+            url = f'{self.api_server}/appointments/customer/'
 
         res = requests.post(url=url,
                             headers={'Authorization': f'Token {self.key}'},
-                            data={'customer': appointment.customer.value, 'title': appointment.title.value,
-                                  'subject': appointment.subject.value, 'date': appointment.date.value})
+                            data={"customer": appointment.customer.value, "title": appointment.title.value,
+                                  "subject": appointment.subject.value, "date": appointment.date.value})
+
         return res.json()
 
     def __book_the_lawyer(self):
-        appointment = Appointment(self.__read_appointment())
+        appointment = Appointment(*self.__read_appointment())
         print(self.__add_appointment(appointment))
 
     def __delete_appointment(self):
@@ -120,7 +137,12 @@ class App:
         title = self.__read('Title', Title)
         subject = self.__read('Subject', Subject)
         # date = self.__read('Date', Date)
-        date = Date(datetime.datetime(2030,1,1,20,30))
+        year = input("Please insert the year of the appointment: ")
+        month = input("Please insert the month of the appointment: ")
+        day = input("Please insert the day of the appointment: ")
+        hour = input("Please insert the hour of the appointment: ")
+        mins = input("Please insert the minutes of the appointment: ")
+        date = Date(datetime.datetime(int(year),int(month),int(day),int(hour),int(mins)))
         return customer, title, subject, date
 
     def __run(self) -> None:
