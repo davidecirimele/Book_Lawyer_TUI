@@ -30,7 +30,7 @@ class App:
             .with_entry(Entry.create('7', 'Log out', on_selected=lambda: self.__logout())) \
             .with_entry(Entry.create('0', 'Exit', on_selected=lambda: print('Bye bye!'), is_exit=True)) \
             .build()
-        self.__dealer = LawFirm()
+        self.__lawfirm = LawFirm()
 
     # Press ⌃R to execute it or replace it with your code.
     # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
@@ -44,10 +44,11 @@ class App:
 
         res = requests.post(url=f'{self.api_server}/auth/login/', data={'username': username, 'password': password})
         if res.status_code != 200:
+            print("Failed to log in, please try again")
             return None
         self.username = username
         json = res.json()
-        print(f"Successfull logged in, Welcome")
+        print("Successfull logged in, Welcome")
         self.key = json['key']
         return self.key
 
@@ -80,36 +81,14 @@ class App:
             print("Logout failed")
         print()
 
-    def __fetch_appointments(self):
-        if self.username == "Lawyer":
-            res = requests.get(url=f'{self.api_server}/appointments/lawyer/',
-                               headers={'Authorization': f'Token {self.key}'})
-        else:
-            res = requests.get(url=f'{self.api_server}/appointments/customer/',
-                               headers={'Authorization': f'Token {self.key}'})
-        if res.status_code != 200:
-            return None
 
-        return res.json()
-
-    def __fetch_single_appointment(self, appointment_id):
-        if self.username == "Lawyer":
-            res = requests.get(url=f'{self.api_server}/appointments/lawyer/{appointment_id}',
-                               headers={'Authorization': f'Token {self.key}'})
-        else:
-            res = requests.get(url=f'{self.api_server}/appointments/customer/{appointment_id}',
-                               headers={'Authorization': f'Token {self.key}'})
-        if res.status_code != 200:
-            return None
-
-        return res.json()
 
 
     def __show_appointments(self):
         if self.username is None:
             print("You must be logged in")
             return
-        appointments = list(self.__fetch_appointments())
+        appointments = list(self.__lawfirm.fetch_appointments(self.key,self.username))
         appointments.sort(key=lambda x: x['date'])
         self.__print_appointments(appointments)
 
@@ -118,50 +97,21 @@ class App:
             print("You must be logged in")
             return
         appointment_id = input("Insert appointment ID: ")
-        self.__print_appointment(self.__fetch_single_appointment(appointment_id))
+        self.__print_appointment(self.__lawfirm.fetch_single_appointment(appointment_id,self.key,self.username))
 
-    def __add_appointment(self, appointment: Appointment):
-        if self.username is None:
-            print("You must be logged in")
-            return
-        if self.username is LAWYER_USERNAME:
-            url = f'{self.api_server}/appointments/lawyer/'
-        else:
-            url = f'{self.api_server}/appointments/customer/'
 
-        res = requests.post(url=url,
-                            headers={'Authorization': f'Token {self.key}'},
-                            data={"customer": appointment.customer.value, "title": appointment.title.value,
-                                  "subject": appointment.subject.value, "date": appointment.date.value})
-
-        return res.json()
 
     def __book_the_lawyer(self):
         if self.username is None:
             print("You must be logged in")
             return
         appointment = Appointment(*self.__read_appointment())
-        self.__print_appointment(self.__add_appointment(appointment))
+        self.__print_appointment(self.__lawfirm.add_appointment(appointment,self.key,self.username))
 
     def __change_the_appointment(self):
         appointment_to_update = input("Insert appointment ID you want to modify: ")
         appointment = Appointment(*self.__read_appointment())
-        self.__print_appointment(self.__update_appointment(appointment,appointment_to_update))
-
-    def __delete_appointment(self):
-        appointment_to_delete = input("Insert appointment ID you want to delete: ")
-
-        if self.username is LAWYER_USERNAME:
-            url = f'{self.api_server}/appointments/lawyer/{appointment_to_delete}/'
-        else:
-            url = f'{self.api_server}/appointments/customer/{appointment_to_delete}/'
-
-        res = requests.delete(url=url, headers={'Authorization': f'Token {self.key}'})
-
-        if res.status_code == 204:
-            print("Appointment successfully deleted")
-        else:
-            print("Appointment not deleted")
+        self.__print_appointment(self.__lawfirm.update_appointment(appointment,appointment_to_update,self.key,self.username))
 
     def __manage_appointment(self):
         if self.username is None:
@@ -172,7 +122,7 @@ class App:
         if selection == '1':
             self.__change_the_appointment()
         else:
-            self.__delete_appointment()
+            self.__lawfirm.delete_appointment(self.key,self.username)
 
     @staticmethod
     def __read(prompt: str, builder: Callable) -> Any:
@@ -205,19 +155,7 @@ class App:
         date = Date(datetime.datetime(int(year),int(month),int(day),int(hour),int(mins)))
         return customer, title, subject, date
 
-    def __update_appointment(self,appointment : Appointment,appointment_to_update):
 
-        if self.username is LAWYER_USERNAME:
-            url = f'{self.api_server}/appointments/lawyer/{appointment_to_update}/'
-        else:
-            url = f'{self.api_server}/appointments/customer/{appointment_to_update}/'
-
-        res = requests.put(url=url,
-                            headers={'Authorization': f'Token {self.key}'},
-                            data={"customer": appointment.customer.value, "title": appointment.title.value,
-                                  "subject": appointment.subject.value, "date": appointment.date.value})
-
-        return res.json()
 
     def __print_appointments(self, appointments) -> None:
         print_sep = lambda: print('-' * 140)
