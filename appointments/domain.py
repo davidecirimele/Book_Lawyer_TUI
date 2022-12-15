@@ -108,7 +108,7 @@ class LawFirm:
         if username is None:
             print("You must be logged in")
             return
-        if username is self.LAWYER_USERNAME:
+        if username == self.LAWYER_USERNAME:
             url = f'{self.api_server}/appointments/lawyer/'
         else:
             url = f'{self.api_server}/appointments/customer/'
@@ -126,7 +126,7 @@ class LawFirm:
     def delete_appointment(self, key, username):
         appointment_to_delete = input("Insert appointment ID you want to delete: ")
 
-        if username is self.LAWYER_USERNAME:
+        if username == self.LAWYER_USERNAME:
             url = f'{self.api_server}/appointments/lawyer/{appointment_to_delete}/'
         else:
             url = f'{self.api_server}/appointments/customer/{appointment_to_delete}/'
@@ -140,7 +140,7 @@ class LawFirm:
 
     def update_appointment(self, appointment: Appointment, appointment_to_update, key, username):
 
-        if username is self.LAWYER_USERNAME:
+        if username == self.LAWYER_USERNAME:
             url = f'{self.api_server}/appointments/lawyer/{appointment_to_update}/'
         else:
             url = f'{self.api_server}/appointments/customer/{appointment_to_update}/'
