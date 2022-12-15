@@ -53,12 +53,12 @@ def test_law_firm_add_appointment():
     assert response is None
 
 
-@patch('builtins.input', side_effect=['2'])
+@patch('builtins.input', side_effect=['2', '2'])
 @patch('builtins.print')
-def test_law_firm_delete_appointment(mocked_input, mocked_print):
+def test_law_firm_delete_appointment(mocked_print, mocked_input):
     law_firm = LawFirm()
     law_firm.delete_appointment("A", "B")
-    mocked_print.assert_called()
+    mocked_print.assert_called_with("Appointment not deleted")
 
 
 def test_law_firm_update_appointment():
