@@ -34,13 +34,12 @@ def test_for_more_coverage(mock_print, mock_input):
     main('__main__')
     mock_print.assert_called()
 
-# Customer(1), Title('Title'), Subject('Subject'), Date(datetime.datetime(2030, 1, 1, 1, 1))
-
 
 @patch('builtins.input', side_effect=['1', 'test', 'test'])
 @patch('builtins.print')
 def test_login(mock_print, mock_input):
     App().run()
+    mock_input.assert_called()
 
 
 @patch('builtins.input', side_effect=['1', 'test', 'test'])
@@ -49,12 +48,14 @@ def test_login_wrong(mock_print, mock_input):
     app = App()
     app.username = "TEST"
     app.run()
+    mock_input.assert_called()
 
 
 @patch('builtins.input', side_effect=['2', 'test', 'test@test.com', 'test', 'test'])
 @patch('builtins.print')
 def test_register(mock_print, mock_input):
     App().run()
+    mock_input.assert_called()
 
 
 @patch('builtins.input', side_effect=['2', 'test', 'test@test.com', 'test', 'test'])
@@ -63,7 +64,7 @@ def test_register_wrong(mock_print, mock_input):
     app = App()
     app.username = "TEST"
     app.run()
-
+    mock_input.assert_called()
 
 
 @patch('builtins.input', side_effect=['7'])
@@ -72,4 +73,39 @@ def test_logout(mock_print, mock_input):
     app = App()
     app.username = "TEST"
     app.run()
+    mock_print.assert_called()
 
+
+@patch('builtins.input', side_effect=['6', '0'])
+@patch('builtins.print')
+def test_manage_appointments_go_back(mock_print, mock_input):
+    app = App()
+    app.username = "TEST"
+    app.run()
+    mock_print.assert_called()
+
+
+@patch('builtins.input', side_effect=['6'])
+@patch('builtins.print')
+def test_manage_appointments_wrong(mock_print, mock_input):
+    app = App()
+    app.run()
+    mock_print.assert_called()
+
+
+@patch('builtins.input', side_effect=['6', '1', 1, 'Title', 'Subject', '2030', '1', '1', '1', '1'])
+@patch('builtins.print')
+def test_delete_appointment(mock_print, mock_input):
+    app = App()
+    app.username = "Lawyer"
+    app.run()
+    mock_print.assert_called()
+
+
+@patch('builtins.input', side_effect=['6', '1', 1, 'Title', 'Subject', '2030', '1', '1', '1', '1'])
+@patch('builtins.print')
+def test_delete_appointment_customer(mock_print, mock_input):
+    app = App()
+    app.username = "TEST"
+    app.run()
+    mock_print.assert_called()

@@ -121,7 +121,7 @@ class App:
             self.__change_the_appointment()
         elif selection == '2':
             self.__law_firm.delete_appointment(self.key, self.username)
-        elif selection == '3':
+        elif selection == '0':
             pass
 
     @staticmethod
