@@ -97,10 +97,28 @@ def test_manage_appointments_go_back(mocked_print, mocked_input):
 
 @patch('builtins.input', side_effect=['5'])
 @patch('builtins.print')
+def test_book_the_lawyer(mocked_print, mocked_input):
+    app = App()
+    app.username = "TEST"
+    app.run()
+    mocked_print.assert_called()
+
+
+@patch('builtins.input', side_effect=['5'])
+@patch('builtins.print')
 def test_book_the_lawyer_wrong(mocked_print, mocked_input):
     app = App()
     app.run()
     mocked_print.assert_any_call("You must be logged in")
+
+
+@patch('builtins.input', side_effect=['5'])
+@patch('builtins.print')
+def test_book_the_lawyer_wrong_you_are_the_lawyer(mocked_print, mocked_input):
+    app = App()
+    app.username = "Lawyer"
+    app.run()
+    mocked_print.assert_any_call("You are the lawyer!!!")
 
 
 @patch('builtins.input', side_effect=['6'])
@@ -117,8 +135,7 @@ def test_delete_appointment(mocked_print, mocked_input):
     app = App()
     app.username = "Lawyer"
     app.run()
-    mocked_input.assert_any_call("1. To modify an appointment,\n"
-                                 "2. To delete an appointment.\n"
+    mocked_input.assert_any_call("1. To delete an appointment.\n"
                                  "0. Back. \n"
                                  "What do you want to do? ")
 
@@ -135,10 +152,10 @@ def test_delete_appointment_customer(mocked_print, mocked_input):
                                  "What do you want to do? ")
 
 
-@patch('builtins.input', side_effect=['6', '1', 1, 'Title', 'Subject', '2030', '1', '1', '1', '1'])
+@patch('builtins.input', side_effect=['6', '1', '1'])
 @patch('builtins.print')
-def test_change_the_appointment(mocked_print, mocked_input):
+def test_change_appointment_customer(mocked_print, mocked_input):
     app = App()
-    app.username = "Lawyer"
+    app.username = "TEST"
     app.run()
     mocked_input.assert_any_call("Insert appointment ID you want to modify: ")

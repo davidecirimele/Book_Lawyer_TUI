@@ -99,6 +99,9 @@ class App:
         if self.username is None:
             print("You must be logged in")
             return
+        if self.username == LAWYER_USERNAME:
+            print("You are the lawyer!!!")
+            return
         appointment = Appointment(*self.__read_appointment())
         self.__print_appointment(self.__law_firm.add_appointment(appointment, self.key, self.username))
 
@@ -112,17 +115,26 @@ class App:
         if self.username is None:
             print("You must be logged in")
             return
-        selection = input("1. To modify an appointment,\n"
-                          "2. To delete an appointment.\n"
-                          "0. Back. \n"
-                          "What do you want to do? ")
+        elif self.username == LAWYER_USERNAME:
+            selection = input("1. To delete an appointment.\n"
+                              "0. Back. \n"
+                              "What do you want to do? ")
+            if selection == '1':
+                self.__law_firm.delete_appointment(self.key, self.username)
+            elif selection == '0':
+                pass
+        else:
+            selection = input("1. To modify an appointment,\n"
+                              "2. To delete an appointment.\n"
+                              "0. Back. \n"
+                              "What do you want to do? ")
 
-        if selection == '1':
-            self.__change_the_appointment()
-        elif selection == '2':
-            self.__law_firm.delete_appointment(self.key, self.username)
-        elif selection == '0':
-            pass
+            if selection == '1':
+                self.__change_the_appointment()
+            elif selection == '2':
+                self.__law_firm.delete_appointment(self.key, self.username)
+            elif selection == '0':
+                pass
 
     @staticmethod
     def __read(prompt: str, builder: Callable) -> Any:
@@ -138,12 +150,9 @@ class App:
                 print(e)
 
     def __read_appointment(self) -> Tuple[Customer, Title, Subject, Date]:
-        if self.username == LAWYER_USERNAME:
-            customer = self.__read('Customer', Customer)
-        else:
-            json = requests.get(url=f"{self.api_server}/auth/user/",
-                                headers={'Authorization': f'Token {self.key}'}).json()
-            customer = Customer(json['pk'])
+        json = requests.get(url=f"{self.api_server}/auth/user/",
+                            headers={'Authorization': f'Token {self.key}'}).json()
+        customer = Customer(json['pk'])
         title = self.__read('Title', Title)
         subject = self.__read('Subject', Subject)
         year = input("Please insert the year of the appointment: ")
